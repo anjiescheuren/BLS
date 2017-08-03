@@ -1,19 +1,16 @@
 $(function() {
+
+  console.log('pre-success');
+
   $.ajax({
       type: 'GET',
-      headers: {"http://localhost:3000": "localhost"},
-      url: 'https://api.bls.gov/publicAPI/v1/timeseries/data/APU0000702421',
+      // headers: {"https://http://localhost:3000/": "localhost"},
+      url: 'https://api.bls.gov/publicAPI/v2/timeseries/data/CXUFOODHOMELB1104M',
       data: { },
       dataType: 'json'
+  })
+    .done(function(data) {
+      console.log('success');
     })
-      .done(function(data) {
-        console.log(data);
-      })
-  // $.ajax({
-  //   type: "GET",
-  //   headers: {"http://localhost:3000/": "localhost"},
-  //   url: "https://api.bls.gov/publicAPI/v1/timeseries/data/APU0000702421"
-  // }).done(function (data) {
-  //   console.log(data);
-  //   });
+
 });

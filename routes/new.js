@@ -11,7 +11,7 @@ app.use(express.static('public'));
 
 app.get('/',function(req,res){
   var context = {};
-  request('http://api.bls.gov/publicAPI/v2/timeseries/data/APU0000702421' , handleGet);
+  request('https://api.bls.gov/publicAPI/v2/timeseries/data/CXUFOODHOMELB1104M' , handleGet);
 
   function handleGet(err, response, body){
     if(!err && response.statusCode < 400){

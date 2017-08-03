@@ -1,46 +1,68 @@
 var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-
-var index = require('./routes/index');
-var users = require('./routes/users');
 
 var app = express();
+var handlebars = require('express-handlebars').create({defaultLayout:'home'});
+// var credentials = require('./credentials.js');
+var request = require('request');
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.engine('handlebars', handlebars.engine);
+app.set('view engine', 'handlebars');
+app.set('port', 3000);
+app.use(express.static('public'));
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.get('/',function(req,res){
+  var context = {};
+  request('https://api.bls.gov/publicAPI/v2/timeseries/data/CXUFOODHOMELB1104M/?registrationkey=93473584286844d3a1de874ae04afda5&startyear=2015&endyear=2015' , handleGet);
 
-app.use('/', index);
-app.use('/users', users);
+  function handleGet(err, response, body){
+    if(!err && response.statusCode < 400){
+      context.bls = body;
+      body=JSON.parse(body);
+      res.send("The year is " + body.Results.series[0].data[0].year + ". The value is " + body.Results.series[0].data[0].value + ".");
+    } else {
+      console.log(err);
+      console.log(response.statusCode);
+    }
+  }
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.get('/',function(req,res){
+  var context = {};
+  request({
+        "url":"http://api.bls.gov/publicAPI/v2/timeseries/data/",
+        "method":"POST",
+        "headers":{
+          "Content-Type":"application/json"
+        },
+        "body":{"seriesid":["CXUFOODHOMELB1104M", "CXUAPPARELLB0216M" ],
+        "registrationkey":"93473584286844d3a1de874ae04afda5"}
+      }, handlePost)
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  function handlePost(err, response, body){
+    if(!err && response.statusCode < 400){
+      context.bls = body;
+      // res.send(body);
+  res.render('home', context);
+    } else {
+      console.log(err);
+      console.log(response.statusCode);
+    }
+  }
 });
 
-module.exports = app;
+app.use(function(req,res){
+  res.status(404);
+  res.render('404');
+});
+
+app.use(function(err, req, res, next){
+  console.error(err.stack);
+  res.type('plain/text');
+  res.status(500);
+  res.render('500');
+});
+
+app.listen(app.get('port'), function(){
+  console.log('Express started on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.');
+});
