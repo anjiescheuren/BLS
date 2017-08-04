@@ -18,37 +18,13 @@ app.get('/',function(req,res){
     if(!err && response.statusCode < 400){
       context.bls = body;
       body=JSON.parse(body);
-      res.send("The year is " + body.Results.series[0].data[0].year + ". The value is " + body.Results.series[0].data[0].value + ".");
+      res.send("Food at Home - Region of Residence: South " + "<br> Year: " + body.Results.series[0].data[0].year + "<br> Value: " + body.Results.series[0].data[0].value);
     } else {
       console.log(err);
       console.log(response.statusCode);
     }
   }
 
-});
-
-app.get('/',function(req,res){
-  var context = {};
-  request({
-        "url":"http://api.bls.gov/publicAPI/v2/timeseries/data/",
-        "method":"POST",
-        "headers":{
-          "Content-Type":"application/json"
-        },
-        "body":{"seriesid":["CXUFOODHOMELB1104M", "CXUAPPARELLB0216M" ],
-        "registrationkey":"93473584286844d3a1de874ae04afda5"}
-      }, handlePost)
-
-  function handlePost(err, response, body){
-    if(!err && response.statusCode < 400){
-      context.bls = body;
-      // res.send(body);
-  res.render('home', context);
-    } else {
-      console.log(err);
-      console.log(response.statusCode);
-    }
-  }
 });
 
 app.use(function(req,res){
